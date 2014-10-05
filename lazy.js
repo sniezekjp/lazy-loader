@@ -1,4 +1,4 @@
-angular.module('app', [])
+angular.module('jsLazy', [])
 .provider('Lazy', function() {
   function factory($q, $injector) {
     var self = this; 
