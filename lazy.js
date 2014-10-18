@@ -1,28 +1,31 @@
-angular.module('jsLazy', [])
-.provider('Lazy', function() {
-  function factory($q, $injector) {
-    var self = this; 
-    return {
-      load: function(info) {
-        var defer = $q.defer();
-        require(['../lib/'+info.file], function(response) {
-          if(!$injector.has(info.name)) {
-            self.factory(info.name, function() {
-              return response;
-            });
+define(['js/app'], function(app) {
+  app.provider('Lazy', function() {
+    function factory($q, $injector) {
+      var self = this;
+      return {
+        load: function(info) {
+          var defer = $q.defer();
+          if(!angular.isArray(info)) {
+            info = [info];
           }
-          defer.resolve(response);
-        });
-        return defer.promise;
-      }
+          require(info, function() {
+            defer.resolve();
+          });
+          return defer.promise;
+        }
+      };
+    }
+    return {
+      $get: factory
     };
-  }
-  return {
-    $get: factory
-  };
-})
-.config(function(LazyProvider, $provide) {
-  LazyProvider.factory = function(name, constructor) {
-    $provide.factory(name, constructor);
-  }
+  });
+  var provider = {};
+  app.config(function($provide, $controllerProvider, $compileProvider, $filterProvider) {
+    provider.factory = $provide.factory;
+    provider.service = $provide.service;
+    provider.directive = $compileProvider.directive;
+    provider.filter = $filterProvider.register;
+    provider.controller = $controllerProvider.register;
+  });
+  return provider;
 });
